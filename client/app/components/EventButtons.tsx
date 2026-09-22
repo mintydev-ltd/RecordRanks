@@ -61,7 +61,7 @@ function EventButtons({
       {!showAllEvents && filteredCategories.length > 1 && (
         <>
           {/* biome-ignore lint/a11y/useSemanticElements: this is the most suitable way to make a button group */}
-          <div className="btn-group btn-group-sm my-2" role="group">
+          <div className="btn-group btn-group-sm my-2 tw:flex-wrap" role="group">
             {filteredCategories.map((cat) => (
               <button
                 key={cat.id}
