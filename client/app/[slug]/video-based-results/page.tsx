@@ -22,19 +22,15 @@ async function ManageResultsPage() {
     orgPermissions: { videoBasedResults: ["update", "approve", "delete"] },
   });
 
-  const [results, events, recordConfigs, regions, spaceType, videoBasedResultsEnabled, instructions] =
-    await Promise.all([
-      db.query.results.findMany({
-        where: { organizationId: organization!.id, competitionId: { isNull: true } },
-        orderBy: { createdAt: "desc" },
-      }),
-      getEvents({ organizationId: organization!.id, includeHiddenAndRemoved: true }),
-      getRecordConfigs(organization!.id, { recordCategory: "online" }),
-      getRegions(organization!.id),
-      getSettingFromDb({ key: "space-type", organizationId: organization!.id }),
-      getSettingFromDb({ key: "video-based-results-enabled", organizationId: organization!.id }),
-      getSettingFromDb({ key: "video-based-results-instructions", organizationId: organization!.id }),
-    ]);
+  const [results, events, videoBasedResultsEnabled, instructions] = await Promise.all([
+    db.query.results.findMany({
+      where: { organizationId: organization!.id, competitionId: { isNull: true } },
+      orderBy: { createdAt: "desc" },
+    }),
+    getEvents({ organizationId: organization!.id, includeHiddenAndRemoved: true }),
+    getSettingFromDb({ key: "video-based-results-enabled", organizationId: organization!.id }),
+    getSettingFromDb({ key: "video-based-results-instructions", organizationId: organization!.id }),
+  ]);
 
   if (videoBasedResultsEnabled !== "true")
     return <p className="fs-4 mx-3 mt-5 text-center">Video-based results are disabled</p>;
@@ -50,28 +46,29 @@ async function ManageResultsPage() {
   });
 
   return (
-    <section>
-      <div className="mb-4 px-2">
-        <h2 className="mb-4 text-center">Results</h2>
+    <SWRConfig
+      value={{
+        fallback: {
+          [SwrKey.SpaceType]: getSettingFromDb({ key: "space-type", organizationId: organization!.id }),
+          [SwrKey.Regions]: getRegions(organization!.id),
+          [SwrKey.RecordConfigs]: getRecordConfigs(organization!.id, { recordCategory: "online" }),
+        },
+      }}
+    >
+      <section>
+        <div className="mb-4 px-2">
+          <h2 className="mb-4 text-center">Results</h2>
 
-        <div className="lh-lg overflow-y-auto border p-2" style={{ maxHeight: "300px" }}>
-          <Markdown>{instructions}</Markdown>
+          <div className="lh-lg overflow-y-auto border p-2" style={{ maxHeight: "300px" }}>
+            <Markdown>{instructions}</Markdown>
+          </div>
         </div>
-      </div>
 
-      <SWRConfig
-        value={{
-          fallback: {
-            [SwrKey.SpaceType]: spaceType,
-            [SwrKey.Regions]: regions,
-          },
-        }}
-      >
         <Suspense fallback={<Loading />}>
-          <ManageResultsScreen results={results as FullResult[]} events={events} recordConfigs={recordConfigs} />
+          <ManageResultsScreen results={results as FullResult[]} events={events} />
         </Suspense>
-      </SWRConfig>
-    </section>
+      </section>
+    </SWRConfig>
   );
 }
 

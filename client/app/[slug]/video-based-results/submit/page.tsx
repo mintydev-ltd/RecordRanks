@@ -23,18 +23,12 @@ async function SubmitResultsPage() {
     videoBasedResultsRules,
     videoBasedResultsContactEmail,
     events,
-    recordConfigs,
-    regions,
-    spaceType,
     { success: isVideoBasedResultReviewer },
   ] = await Promise.all([
     getSettingFromDb({ key: "video-based-results-enabled", organizationId: organization!.id }),
     getSettingFromDb({ key: "video-based-results-rules", organizationId: organization!.id, optional: true }),
     getSettingFromDb({ key: "video-based-results-contact-email", organizationId: organization!.id, optional: true }),
     getVideoBasedEvents(organization!.id),
-    getRecordConfigs(organization!.id, { recordCategory: "online" }),
-    getRegions(organization!.id),
-    getSettingFromDb({ key: "space-type", organizationId: organization!.id }),
     auth.api.hasPermission({
       headers: httpHeaders,
       body: { permissions: { videoBasedResults: ["update", "approve", "delete"] } },
@@ -51,8 +45,9 @@ async function SubmitResultsPage() {
       <SWRConfig
         value={{
           fallback: {
-            [SwrKey.SpaceType]: spaceType,
-            [SwrKey.Regions]: regions,
+            [SwrKey.SpaceType]: getSettingFromDb({ key: "space-type", organizationId: organization!.id }),
+            [SwrKey.Regions]: getRegions(organization!.id),
+            [SwrKey.RecordConfigs]: getRecordConfigs(organization!.id, { recordCategory: "online" }),
           },
         }}
       >
@@ -61,7 +56,6 @@ async function SubmitResultsPage() {
             videoBasedResultsRules={videoBasedResultsRules}
             videoBasedResultsContactEmail={videoBasedResultsContactEmail}
             events={events}
-            recordConfigs={recordConfigs}
             isVideoBasedResultReviewer={isVideoBasedResultReviewer}
           />
         </Suspense>

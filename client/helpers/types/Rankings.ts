@@ -1,5 +1,5 @@
 import type { ContestResponse } from "~/server/db/schema/contests.ts";
-import type { PersonResponse } from "~/server/db/schema/persons.ts";
+import type { PersonDetails } from "~/server/db/schema/persons.ts";
 import type { Attempt } from "~/server/db/schema/results.ts";
 
 export type Ranking = {
@@ -7,7 +7,7 @@ export type Ranking = {
   ranking: number;
   date: Date;
   personId?: number; // only set for top persons rankings
-  persons: Pick<PersonResponse, "id" | "name" | "localizedName" | "regionCode" | "wcaId">[];
+  persons: PersonDetails[];
   result: number;
   memo: number | null; // only set for top single rankings for events that have memo
   attempts: Attempt[];

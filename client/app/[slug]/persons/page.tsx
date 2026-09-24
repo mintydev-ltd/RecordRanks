@@ -22,9 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: "Persons",
     description: process.env.METADATA_PERSONS_DESCRIPTION,
-    openGraph: process.env.OG_IMAGES_URL
-      ? { images: [`${process.env.OG_IMAGES_URL}/${slug}/persons`] }
-      : undefined,
+    openGraph: process.env.OG_IMAGES_URL ? { images: [`${process.env.OG_IMAGES_URL}/${slug}/persons`] } : undefined,
   };
 }
 

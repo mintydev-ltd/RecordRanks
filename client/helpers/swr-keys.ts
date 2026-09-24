@@ -2,6 +2,7 @@ export const SwrKey = {
   SpaceType: "space-type",
   Events: "events",
   Regions: "regions",
+  RecordConfigs: "record-configs",
   MemberRequestDetails: "member-request-details",
   MemberRequestInstructions: "member-request-instructions",
   PrivacyPolicy: "privacy-policy",

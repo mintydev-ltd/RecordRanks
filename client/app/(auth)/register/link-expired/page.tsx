@@ -11,8 +11,6 @@ import { MainContext } from "~/helpers/contexts.ts";
 import { useSession } from "~/helpers/hooks.ts";
 
 function VerificationLinkExpiredPage() {
-  if (!HAS_CREDENTIAL_AUTH) return <p className="text-center">EMAIL & PASSWORD AUTHENTICATION IS NOT SUPPORTED</p>;
-
   const searchParams = useSearchParams();
   const { changeSuccessMessage, changeErrorMessages } = useContext(MainContext);
   const { user } = useSession();
@@ -35,6 +33,8 @@ function VerificationLinkExpiredPage() {
       setIsDisabled(true);
     }
   }, [user]);
+
+  if (!HAS_CREDENTIAL_AUTH) return <p className="text-center">EMAIL & PASSWORD AUTHENTICATION IS NOT SUPPORTED</p>;
 
   const resendVerificationLink = () => {
     startTransition(async () => {

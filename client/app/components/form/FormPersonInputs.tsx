@@ -211,6 +211,7 @@ function FormPersonInputs({
   return (
     <div className={display === "grid" ? "row" : ""}>
       {personNames.map((personName: string, inputIndex: number) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: there's no other option here
         <div key={inputIndex} className={personNames.length > 1 && display === "grid" ? "col-md-6" : ""}>
           <div className={`position-relative ${display === "one-line" ? "" : "mb-2"}`}>
             <FormTextInput
@@ -246,6 +247,7 @@ function FormPersonInputs({
                 ) : matchedPersons.length > 0 ? (
                   matchedPersons.map((person: PersonResponse | null, matchIndex: number) => (
                     <li
+                      // biome-ignore lint/suspicious/noArrayIndexKey: there's no other option here
                       key={matchIndex}
                       className={`list-group-item ${matchIndex === matchSelection ? "active" : ""}`}
                       style={{ cursor: "pointer" }}

@@ -6,7 +6,7 @@ import EventTitle from "~/app/components/EventTitle.tsx";
 import { SwrKey } from "~/helpers/swr-keys.ts";
 import { getAlwaysShowDecimals, getFormattedResult } from "~/helpers/utility-functions.ts";
 import type { EventResponseWithCategory } from "~/server/db/schema/events.ts";
-import { PersonalRecordPair } from "~/server/server-only-functions/persons-functions.ts";
+import type { PersonalRecordPair } from "~/server/server-only-functions/persons-functions.ts";
 
 type Props = {
   prsPromise: Promise<PersonalRecordPair[]>;
@@ -16,9 +16,9 @@ type Props = {
 function PRsTable({ prsPromise, organizationSlug }: Props) {
   const prs = use(prsPromise);
 
-  if (prs.length === 0) return <p className="fs-5 mx-2 mt-4">No personal records found for this event category</p>;
-
   const { data: events }: { data: EventResponseWithCategory[] } = useSWR(SwrKey.Events, { suspense: true });
+
+  if (prs.length === 0) return <p className="fs-5 mx-2 mt-4">No personal records found for this event category</p>;
 
   return (
     <div className="table-responsive flex-grow-1">

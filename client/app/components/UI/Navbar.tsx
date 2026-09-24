@@ -320,6 +320,18 @@ function Navbar() {
                   <FontAwesomeIcon icon={faUser} aria-label="User" />
                 </button>
                 <ul className={`dropdown-menu end-0 tw:text-nowrap px-3 px-lg-2 py-0 ${userExpanded ? "show" : ""}`}>
+                  {organization && member?.personId && (
+                    <li>
+                      <Link
+                        href={slugPath(organization.slug, `/persons/${member.personId}`)}
+                        prefetch={false}
+                        onClick={collapseAll}
+                        className={`nav-link ${pathname === slugPath(organization.slug, `/persons/${member.personId}`) ? "active" : ""}`}
+                      >
+                        Profile
+                      </Link>
+                    </li>
+                  )}
                   {organization && videoBasedResultsEnabled && (
                     <>
                       {canApproveVideoBasedResults && (

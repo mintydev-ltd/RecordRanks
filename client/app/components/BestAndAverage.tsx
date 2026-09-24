@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
+import useSWR from "swr";
 import Time from "~/app/components/Time.tsx";
+import { SwrKey } from "~/helpers/swr-keys.ts";
 import type { EventWrPair, RoundFormat } from "~/helpers/types.ts";
 import { getBestAndAverage, setResultWorldRecords } from "~/helpers/utility-functions.ts";
 import type { EventResponseWithCategory } from "~/server/db/schema/events.ts";
@@ -13,10 +15,11 @@ type Props = {
   roundFormat: RoundFormat;
   attempts: Attempt[];
   eventWrPair: EventWrPair | undefined;
-  recordConfigs: RecordConfigResponse[];
 };
 
-function BestAndAverage({ event, roundFormat, attempts, eventWrPair, recordConfigs }: Props) {
+function BestAndAverage({ event, roundFormat, attempts, eventWrPair }: Props) {
+  const { data: recordConfigs }: { data: RecordConfigResponse[] } = useSWR(SwrKey.RecordConfigs, { suspense: true });
+
   const pseudoResult = useMemo<ResultResponse>(() => {
     const { best, average } = getBestAndAverage(attempts, event, roundFormat);
     let tempResult = { best, average, attempts, eventId: event.eventId } as ResultResponse;

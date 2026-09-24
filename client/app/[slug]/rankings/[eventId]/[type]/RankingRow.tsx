@@ -62,6 +62,7 @@ function RankingRow({
         </td>
       )}
       <td>{getFormattedDate(ranking.date)}</td>
+      {/* This is largely the same as in PersonRecordRow */}
       <td>
         {ranking.contest ? (
           <span className="d-flex gap-2 align-items-center">
@@ -75,6 +76,7 @@ function RankingRow({
           <RankingLinks ranking={ranking} />
         )}
       </td>
+      {/* This is largely the same as in PersonRecordRow */}
       {showTeamColumn && (
         <td>
           <div className="d-flex fs-6 flex-column gap-2">

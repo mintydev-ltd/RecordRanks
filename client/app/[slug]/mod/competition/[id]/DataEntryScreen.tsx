@@ -59,7 +59,6 @@ type Props = {
   rounds: RoundResponse[];
   results: ResultResponse[];
   persons: PersonResponse[];
-  recordConfigs: RecordConfigResponse[];
   memberPerson: PersonResponse | undefined;
 };
 
@@ -71,7 +70,6 @@ function DataEntryScreen({
   rounds: initRounds,
   results: initResults,
   persons: initPersons,
-  recordConfigs,
   memberPerson,
 }: Props) {
   const pathname = usePathname();
@@ -85,6 +83,7 @@ function DataEntryScreen({
   const { executeAsync: updateResult, isPending: isUpdating } = useAction(updateContestResultSF);
   const { executeAsync: deleteResult, isPending: isDeleting } = useAction(deleteContestResultSF);
   const { executeAsync: openRound, isPending: isOpeningRound } = useAction(openRoundSF);
+  const { data: recordConfigs }: { data: RecordConfigResponse[] } = useSWR(SwrKey.RecordConfigs, { suspense: true });
   const { data: canCreateAndUpdateContests } = useSWR(session ? [SwrKey.CanCreateContests, session] : null, () =>
     clientGetHasPermission({ competitions: ["create", "update"], meetups: ["create", "update"] }),
   );
@@ -340,6 +339,7 @@ function DataEntryScreen({
           <div className="tw:mb-1 tw:flex tw:flex-col tw:gap-2">
             {attempts.map((attempt: Attempt, i: number) => (
               <AttemptInput
+                // biome-ignore lint/suspicious/noArrayIndexKey: there's no other option here
                 key={i}
                 attNumber={i + 1}
                 attempt={attempt}
@@ -359,7 +359,6 @@ function DataEntryScreen({
               roundFormat={round.format}
               attempts={attempts}
               eventWrPair={eventWrPair}
-              recordConfigs={recordConfigs}
             />
           )}
           <div className="d-flex my-3 flex-wrap gap-3">

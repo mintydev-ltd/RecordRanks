@@ -16,6 +16,7 @@ function Competitors({ persons, noFlag = false, vertical = false, showWcaLink = 
           person ? (
             <Person key={person.id} person={person} noFlag={noFlag} showWcaLink={showWcaLink} />
           ) : (
+            // biome-ignore lint/suspicious/noArrayIndexKey: there's no other option here
             <span key={index}>(not found)</span>
           ),
         )}

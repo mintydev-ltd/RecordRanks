@@ -9,7 +9,7 @@ import ActiveInactiveIcon from "~/app/components/UI/ActiveInactiveIcon.tsx";
 import Button from "~/app/components/UI/Button.tsx";
 import { MainContext } from "~/helpers/contexts.ts";
 import { getActionError } from "~/helpers/utility-functions.ts";
-import type { FullMemberRequest } from "~/server/db/schema/member-requests";
+import type { FullMemberRequest } from "~/server/db/schema/member-requests.ts";
 import { orgRolesObject } from "~/server/organization-permissions.ts";
 import { approveMemberRequestSF, deleteMemberRequestSF } from "~/server/server-functions/user-server-functions.ts";
 

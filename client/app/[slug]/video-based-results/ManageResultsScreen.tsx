@@ -6,6 +6,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import useSWR from "swr";
 import Attempts from "~/app/components/Attempts.tsx";
 import Competitors from "~/app/components/Competitors.tsx";
 import FiltersContainer from "~/app/components/FiltersContainer.tsx";
@@ -14,6 +15,7 @@ import Time from "~/app/components/Time.tsx";
 import ActiveInactiveIcon from "~/app/components/UI/ActiveInactiveIcon.tsx";
 import Button from "~/app/components/UI/Button.tsx";
 import ToastMessages from "~/app/components/UI/ToastMessages.tsx";
+import { SwrKey } from "~/helpers/swr-keys.ts";
 import type { InputPerson } from "~/helpers/types.ts";
 import { getFormattedDate, shortenEventName, slugPath } from "~/helpers/utility-functions.ts";
 import type { EventResponseWithCategory } from "~/server/db/schema/events.ts";
@@ -23,15 +25,15 @@ import type { FullResult } from "~/server/db/schema/results.ts";
 type Props = {
   results: FullResult[];
   events: EventResponseWithCategory[];
-  recordConfigs: RecordConfigResponse[];
 };
 
-function ManageResultsScreen({ results, events, recordConfigs }: Props) {
+function ManageResultsScreen({ results, events }: Props) {
   const { slug }: { slug: string } = useParams();
 
-  const parentRef = useRef<Element>(null);
+  const { data: recordConfigs }: { data: RecordConfigResponse[] } = useSWR(SwrKey.RecordConfigs, { suspense: true });
   const [persons, setPersons] = useState<InputPerson[]>([null]);
   const [personNames, setPersonNames] = useState([""]);
+  const parentRef = useRef<Element>(null);
 
   const filteredResults = useMemo(
     () =>

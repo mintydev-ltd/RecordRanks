@@ -12,6 +12,7 @@ function SignInWithGoogleButton({ disabled, onClick }: Props) {
       <div className="gsi-material-button-state"></div>
       <div className="gsi-material-button-content-wrapper">
         <div
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: this is required
           dangerouslySetInnerHTML={{
             __html: `
                   <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;">

@@ -14,9 +14,9 @@ type Props = {
 function BlogSection({ latestBlogPostsPromise }: Props) {
   const latestBlogPosts = use(latestBlogPostsPromise);
 
-  if (latestBlogPosts.length === 0) return;
-
   const { slug }: { slug: string } = useParams();
+
+  if (latestBlogPosts.length === 0) return;
 
   return (
     <>

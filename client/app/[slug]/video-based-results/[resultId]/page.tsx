@@ -31,11 +31,8 @@ async function UpdateVideoBasedResultPage({ params }: Props) {
     orgPermissions: { videoBasedResults: ["update", "approve", "delete"] },
   });
 
-  const [events, recordConfigs, regions, spaceType, result] = await Promise.all([
+  const [events, result] = await Promise.all([
     getVideoBasedEvents(organization!.id),
-    getRecordConfigs(organization!.id, { recordCategory: "online" }),
-    getRegions(organization!.id),
-    getSettingFromDb({ key: "space-type", organizationId: organization!.id }),
     db.query.results.findFirst({ where: { organizationId: organization!.id, id: resultId } }),
   ]);
 
@@ -55,8 +52,9 @@ async function UpdateVideoBasedResultPage({ params }: Props) {
       <SWRConfig
         value={{
           fallback: {
-            [SwrKey.SpaceType]: spaceType,
-            [SwrKey.Regions]: regions,
+            [SwrKey.SpaceType]: getSettingFromDb({ key: "space-type", organizationId: organization!.id }),
+            [SwrKey.Regions]: getRegions(organization!.id),
+            [SwrKey.RecordConfigs]: getRecordConfigs(organization!.id, { recordCategory: "online" }),
           },
         }}
       >
@@ -65,7 +63,6 @@ async function UpdateVideoBasedResultPage({ params }: Props) {
             videoBasedResultsRules={null}
             videoBasedResultsContactEmail={null}
             events={events}
-            recordConfigs={recordConfigs}
             result={result}
             participants={participants}
             creator={creator}

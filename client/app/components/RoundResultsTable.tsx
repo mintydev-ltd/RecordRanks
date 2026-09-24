@@ -4,7 +4,7 @@ import Attempts from "~/app/components/Attempts.tsx";
 import Competitors from "~/app/components/Competitors.tsx";
 import Time from "~/app/components/Time.tsx";
 import Button from "~/app/components/UI/Button.tsx";
-import { C, IS_CUBING_CONTESTS_INSTANCE } from "~/helpers/constants";
+import { C, IS_CUBING_CONTESTS_INSTANCE } from "~/helpers/constants.ts";
 import { roundFormats } from "~/helpers/roundFormats.ts";
 import { getIsProceedableResult } from "~/helpers/utility-functions.ts";
 import type { EventResponseWithCategory } from "~/server/db/schema/events.ts";

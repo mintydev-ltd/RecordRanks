@@ -71,17 +71,18 @@ async function DataEntryPage({ params, searchParams }: Props) {
   }
 
   return (
-    <section>
-      <ToastMessages className="mx-2" />
+    <SWRConfig
+      value={{
+        fallback: {
+          [SwrKey.SpaceType]: spaceType,
+          [SwrKey.Regions]: regions,
+          [SwrKey.RecordConfigs]: recordConfigs,
+        },
+      }}
+    >
+      <section>
+        <ToastMessages className="mx-2" />
 
-      <SWRConfig
-        value={{
-          fallback: {
-            [SwrKey.SpaceType]: spaceType,
-            [SwrKey.Regions]: regions,
-          },
-        }}
-      >
         <Suspense fallback={<Loading />}>
           <DataEntryScreen
             key={eventIdOrFirst}
@@ -92,12 +93,11 @@ async function DataEntryPage({ params, searchParams }: Props) {
             rounds={rounds}
             results={results}
             persons={memberPerson ? [...persons, memberPerson] : persons}
-            recordConfigs={recordConfigs}
             memberPerson={memberPerson}
           />
         </Suspense>
-      </SWRConfig>
-    </section>
+      </section>
+    </SWRConfig>
   );
 }
 

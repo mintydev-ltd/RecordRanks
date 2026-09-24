@@ -51,6 +51,7 @@ import { type LogCode, logger } from "~/server/logger.ts";
 import type { OrganizationRole, OrgPluginPermissions } from "~/server/organization-permissions.ts";
 import type { AdminPluginPermissions, Role } from "~/server/permissions.ts";
 import { RrActionError } from "~/server/safe-action.ts";
+import { personsArrayJsonSql } from "~/server/server-only-functions/persons-functions.ts";
 
 export function logMessage(
   code: LogCode,
@@ -242,17 +243,6 @@ export async function getRecordConfigs(
       ),
     );
 }
-
-const personsArrayJsonSql = sql`
-  JSON_AGG(
-    JSON_BUILD_OBJECT(
-      'id', ${personsTable.id},
-      'name', ${personsTable.name},
-      'localizedName', ${personsTable.localizedName},
-      'regionCode', ${personsTable.regionCode},
-      'wcaId', ${personsTable.wcaId}
-    )
-  )`;
 
 export async function getRecords({
   organizationId,

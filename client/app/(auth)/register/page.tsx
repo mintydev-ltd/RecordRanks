@@ -15,8 +15,6 @@ import { SwrKey } from "~/helpers/swr-keys.ts";
 import { getPrivacyPolicySF } from "~/server/server-functions/server-functions.ts";
 
 function RegisterPage() {
-  if (!HAS_CREDENTIAL_AUTH) return <p className="text-center">EMAIL + PASSWORD AUTHENTICATION IS NOT SUPPORTED</p>;
-
   const { changeErrorMessages, changeSuccessMessage, resetMessages } = useContext(MainContext);
 
   const { data: privacyPolicy, isLoading: isLoadingPrivacyPolicy } = useSWR(SwrKey.PrivacyPolicy, () =>
@@ -26,6 +24,8 @@ function RegisterPage() {
   const [isSubmitting, startTransition] = useTransition();
 
   const isPending = isSubmitting || isLoadingPrivacyPolicy;
+
+  if (!HAS_CREDENTIAL_AUTH) return <p className="text-center">EMAIL + PASSWORD AUTHENTICATION IS NOT SUPPORTED</p>;
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();

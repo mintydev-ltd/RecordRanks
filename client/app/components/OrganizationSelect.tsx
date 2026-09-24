@@ -42,6 +42,7 @@ function OrganizationSelect({ organizations, isAdmin }: Props) {
           onClick={() => selectOrganization(organization)}
           className="d-flex list-group-item list-group-item-action gap-3 align-items-center"
         >
+          {/* biome-ignore lint/performance/noImgElement: this is necessary here */}
           {organization.logo && <img src={organization.logo} alt="Logo" className="tw:h-14" />}
           <span className="fs-5 text-body">{organization.name}</span>
           {JSON.parse(organization.metadata).private && (

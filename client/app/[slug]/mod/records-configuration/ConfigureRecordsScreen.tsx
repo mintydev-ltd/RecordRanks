@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAction } from "next-safe-action/hooks";
 import { useContext, useState } from "react";
 import useSWR from "swr";
-import GenerateRecordConfigsForm from "~/app/[slug]/mod/records-configuration/GenerateRecordConfigsForm";
+import GenerateRecordConfigsForm from "~/app/[slug]/mod/records-configuration/GenerateRecordConfigsForm.tsx";
 import Form from "~/app/components/form/Form.tsx";
 import FormCheckbox from "~/app/components/form/FormCheckbox.tsx";
 import FormNumberInput from "~/app/components/form/FormNumberInput.tsx";

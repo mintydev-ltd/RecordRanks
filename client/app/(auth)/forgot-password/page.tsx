@@ -9,13 +9,13 @@ import { HAS_CREDENTIAL_AUTH } from "~/helpers/constants.ts";
 import { MainContext } from "~/helpers/contexts.ts";
 
 function RequestPasswordResetPage() {
-  if (!HAS_CREDENTIAL_AUTH) return <p className="text-center">EMAIL + PASSWORD AUTHENTICATION IS NOT SUPPORTED</p>;
-
   const { changeErrorMessages, changeSuccessMessage } = useContext(MainContext);
 
   const [email, setEmail] = useState("");
   const [isDisabled, setIsDisabled] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  if (!HAS_CREDENTIAL_AUTH) return <p className="text-center">EMAIL + PASSWORD AUTHENTICATION IS NOT SUPPORTED</p>;
 
   const handleSubmit = () => {
     const parsed = z.email().safeParse(email);

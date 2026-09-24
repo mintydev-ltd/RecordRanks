@@ -9,8 +9,6 @@ import { HAS_CREDENTIAL_AUTH } from "~/helpers/constants.ts";
 import { MainContext } from "~/helpers/contexts.ts";
 
 function ResetPasswordPage() {
-  if (!HAS_CREDENTIAL_AUTH) return <p className="text-center">EMAIL + PASSWORD AUTHENTICATION IS NOT SUPPORTED</p>;
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const { changeErrorMessages, changeSuccessMessage, resetMessages } = useContext(MainContext);
@@ -25,6 +23,8 @@ function ResetPasswordPage() {
       setIsDisabled(false);
     }
   }, [searchParams]);
+
+  if (!HAS_CREDENTIAL_AUTH) return <p className="text-center">EMAIL + PASSWORD AUTHENTICATION IS NOT SUPPORTED</p>;
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();

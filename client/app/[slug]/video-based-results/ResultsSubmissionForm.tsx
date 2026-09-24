@@ -6,7 +6,7 @@ import { useAction } from "next-safe-action/hooks";
 import { useCallback, useContext, useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import AttemptInput from "~/app/components/AttemptInput.tsx";
-import BestAndAverage from "~/app/components/BestAndAverage";
+import BestAndAverage from "~/app/components/BestAndAverage.tsx";
 import CreatorDetails from "~/app/components/CreatorDetails.tsx";
 import DonateButton from "~/app/components/content/DonateButton.tsx";
 import Form from "~/app/components/form/Form.tsx";
@@ -26,7 +26,6 @@ import type { Creator, EventWrPair, InputPerson, RoundFormat } from "~/helpers/t
 import { getActionError, getBlankCompetitors, getRoundFormatOptions, slugPath } from "~/helpers/utility-functions.ts";
 import type { EventResponseWithCategory } from "~/server/db/schema/events.ts";
 import type { PersonResponse } from "~/server/db/schema/persons.ts";
-import type { RecordConfigResponse } from "~/server/db/schema/record-configs.ts";
 import type { Attempt, SelectResult } from "~/server/db/schema/results.ts";
 import {
   createVideoBasedResultSF,
@@ -38,7 +37,6 @@ type Props = {
   videoBasedResultsRules: string | null;
   videoBasedResultsContactEmail: string | null;
   events: EventResponseWithCategory[];
-  recordConfigs: RecordConfigResponse[];
   isVideoBasedResultReviewer: boolean;
 } & (
   | {
@@ -59,7 +57,6 @@ function ResultsSubmissionForm({
   videoBasedResultsRules,
   videoBasedResultsContactEmail,
   events,
-  recordConfigs,
   result,
   participants: initParticipants,
   creator,
@@ -283,6 +280,7 @@ function ResultsSubmissionForm({
         <div className="tw:mb-1 tw:flex tw:flex-col tw:gap-2">
           {attempts.map((attempt: Attempt, i: number) => (
             <AttemptInput
+              // biome-ignore lint/suspicious/noArrayIndexKey: there's no other option here
               key={i}
               attNumber={i + 1}
               attempt={attempt}
@@ -297,13 +295,7 @@ function ResultsSubmissionForm({
         {isPendingWrPairs ? (
           <Loading small dontCenter />
         ) : (
-          <BestAndAverage
-            event={event}
-            roundFormat={roundFormat.value}
-            attempts={attempts}
-            eventWrPair={eventWrPair}
-            recordConfigs={recordConfigs}
-          />
+          <BestAndAverage event={event} roundFormat={roundFormat.value} attempts={attempts} eventWrPair={eventWrPair} />
         )}
         <FormDateInput
           id="date"

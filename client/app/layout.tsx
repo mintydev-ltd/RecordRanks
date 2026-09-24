@@ -32,6 +32,7 @@ export default function RootLayout({ children }: Props) {
       <head>
         {process.env.ANALYTICS_SCRIPT_SRC && <Script src={process.env.ANALYTICS_SCRIPT_SRC} />}
         {process.env.ANALYTICS_SCRIPT_CONTENT && (
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: this is required
           <script dangerouslySetInnerHTML={{ __html: process.env.ANALYTICS_SCRIPT_CONTENT }} />
         )}
       </head>

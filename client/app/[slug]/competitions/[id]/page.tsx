@@ -117,7 +117,7 @@ async function ContestDetailsPage({ params }: Props) {
                     Contact:&#8194;<span className="fs-6">{contest.contact}</span>
                   </p>
                 )}
-                <p className="mb-2">
+                <div className="mb-2">
                   {organizers.length > 1 ? "Organizers" : "Organizer"}:&#8194;
                   {organizers.map((org, index) => (
                     <span key={org.id} className={`${organizers.length > 2 ? "fs-6" : "fs-5"} tw:me-1 tw:inline-flex`}>
@@ -125,7 +125,7 @@ async function ContestDetailsPage({ params }: Props) {
                       {index !== organizers.length - 1 && ","}
                     </span>
                   ))}
-                </p>
+                </div>
                 {contest.participants > 0 ? (
                   <p className="mb-2">
                     Number of participants:&#8194;<b>{contest.participants}</b>

@@ -25,12 +25,14 @@ function Attempts({ event, attempts, showMultiPoints = false }: Props) {
         });
 
         if (isAllDnfOrDnsAttempts || attempts.length < 5 || attempts.some((a) => a.result === 0))
+          // biome-ignore lint/suspicious/noArrayIndexKey: there's no other option here
           return <span key={index}>{formattedTime}</span>;
 
         if (bestAttempt === undefined && attempt.result === best) bestAttempt = index;
         if (bestAttempt !== index && worstAttempt === undefined && attempt.result === worst) worstAttempt = index;
         const addParentheses = index === bestAttempt || index === worstAttempt;
 
+        // biome-ignore lint/suspicious/noArrayIndexKey: there's no other option here
         return <span key={index}>{`${addParentheses ? "(" : ""}${formattedTime}${addParentheses ? ")" : ""}`}</span>;
       })}
     </div>

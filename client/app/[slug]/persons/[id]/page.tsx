@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { SWRConfig } from "swr";
 import z from "zod";

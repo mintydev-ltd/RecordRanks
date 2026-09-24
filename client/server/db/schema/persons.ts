@@ -38,6 +38,7 @@ export const personsTable = rrSchema.table(
 
 export type InsertPerson = typeof personsTable.$inferInsert;
 export type SelectPerson = typeof personsTable.$inferSelect;
+export type PersonDetails = Pick<SelectPerson, "id" | "name" | "localizedName" | "regionCode" | "wcaId">;
 
 const {
   organizationId: _,
