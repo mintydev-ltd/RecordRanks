@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, exists, inArray } from "drizzle-orm";
+import { and, arrayContains, desc, eq, exists, inArray } from "drizzle-orm";
 import { type DbTransactionType, db } from "~/server/db/provider.ts";
 import { type SelectContest, contestsTable as table } from "~/server/db/schema/contests.ts";
 import type { EventResponseWithCategory } from "~/server/db/schema/events.ts";
@@ -14,10 +14,12 @@ export async function getContests({
   organizationId,
   eventId,
   region,
+  competitorPersonId,
 }: {
   organizationId: string;
   eventId?: string;
   region?: RegionResponse;
+  competitorPersonId?: number;
 }) {
   return await db
     .select({
@@ -53,6 +55,20 @@ export async function getContests({
                     eq(roundsTable.organizationId, table.organizationId),
                     eq(roundsTable.competitionId, table.competitionId),
                     eq(roundsTable.eventId, eventId),
+                  ),
+                ),
+            )
+          : undefined,
+        competitorPersonId
+          ? exists(
+              db
+                .select()
+                .from(resultsTable)
+                .where(
+                  and(
+                    eq(resultsTable.organizationId, table.organizationId),
+                    eq(resultsTable.competitionId, table.competitionId),
+                    arrayContains(resultsTable.personIds, [competitorPersonId]),
                   ),
                 ),
             )
