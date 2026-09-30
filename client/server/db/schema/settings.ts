@@ -39,7 +39,8 @@ export type SettingKey =
   | "scorecards-link-enabled"
   // socials
   | "website-link"
-  | "discord-server-link";
+  | "discord-server-link"
+  | "instagram-link";
 
 export const settingsTable = rrSchema.table(
   "settings",

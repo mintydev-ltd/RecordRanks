@@ -20,10 +20,11 @@ async function OrganizationHomePage({ params }: Props) {
   const { slug } = await params;
 
   const organization = await getOrgDetails({ slug });
-  const [description, websiteLink, discordServerLink] = await Promise.all([
+  const [description, websiteLink, discordServerLink, instagramLink] = await Promise.all([
     getSettingFromDb({ key: "home-page-description", organizationId: organization.id, optional: true }),
     getSettingFromDb({ key: "website-link", organizationId: organization.id, optional: true }),
     getSettingFromDb({ key: "discord-server-link", organizationId: organization.id, optional: true }),
+    getSettingFromDb({ key: "instagram-link", organizationId: organization.id, optional: true }),
   ]);
 
   const latestBlogPostsPromise = getBlogPosts(organization.id, { limit: 2 });
@@ -64,7 +65,7 @@ async function OrganizationHomePage({ params }: Props) {
         </Link>
       </div>
 
-      {(websiteLink || discordServerLink) && (
+      {(websiteLink || discordServerLink || instagramLink) && (
         <>
           <h3 className="rr-basic-heading">Socials</h3>
 
@@ -72,6 +73,9 @@ async function OrganizationHomePage({ params }: Props) {
             <SocialLinkButton link={websiteLink}>Website</SocialLinkButton>
             <SocialLinkButton link={discordServerLink} logo="discord">
               Discord server
+            </SocialLinkButton>
+            <SocialLinkButton link={instagramLink} logo="instagram">
+              Instagram
             </SocialLinkButton>
           </div>
         </>

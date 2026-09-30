@@ -6,7 +6,7 @@ import { MainContext } from "~/helpers/contexts.ts";
 type Props = {
   children: React.ReactNode;
   link: string | null;
-  logo?: "discord";
+  logo?: "discord" | "instagram";
 } & React.HTMLAttributes<HTMLAnchorElement>;
 
 function SocialLinkButton({ children, link, logo, className }: Props) {
@@ -22,6 +22,7 @@ function SocialLinkButton({ children, link, logo, className }: Props) {
       className={`d-inline-flex btn ${theme === "dark" ? "btn-light" : "btn-dark"} gap-2 align-items-center ${className}`}
     >
       {logo === "discord" && <span className="tw:icon-[logos--discord-icon]" />}
+      {logo === "instagram" && <span className="tw:icon-[logos--instagram-icon]" />}
       <span>{children}</span>
     </a>
   );

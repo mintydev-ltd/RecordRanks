@@ -210,5 +210,11 @@ If you see any errors, correct them before submitting. If you see anything that 
       value: "",
       description: "Link to a Discord server dedicated to the space",
     },
+    {
+      key: "instagram-link" as const,
+      group: "socials" as const,
+      value: "",
+      description: "Link to an Instagram profile dedicated to the space",
+    },
   ].map((o) => ({ ...o, organizationId }));
 }
