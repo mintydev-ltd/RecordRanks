@@ -9,6 +9,13 @@ export const defaultGlobalSettings: InsertSetting[] = [
     description: "Contact email address to send error logs to",
   },
   {
+    key: "kofi-goal",
+    group: "default",
+    value: "",
+    description:
+      "The next goal on the RecordRanks Ko-fi page, i.e. the RR feature that will be prioritized once the funding goal is reached.",
+  },
+  {
     key: "kofi-goal-progress",
     group: "default",
     value: "",

@@ -45,10 +45,11 @@ async function ContestsPage({ params, searchParams }: Props) {
   const { eventId, region: regionCode } = await searchParams;
 
   const organization = await getOrgDetails({ slug });
-  const [events, eventCategories, regions, kofiGoalProgress] = await Promise.all([
+  const [events, eventCategories, regions, kofiGoal, kofiGoalProgress] = await Promise.all([
     getEvents({ organizationId: organization.id }),
     getEventCategories({ organizationId: organization.id }),
     getRegions(organization.id),
+    getSettingFromDb({ key: "kofi-goal", organizationId: null, optional: true }),
     getSettingFromDb({ key: "kofi-goal-progress", organizationId: null, optional: true }),
   ]);
 
@@ -67,9 +68,9 @@ async function ContestsPage({ params, searchParams }: Props) {
         <SWRConfig value={{ fallback: { [SwrKey.Regions]: regions } }}>
           <Suspense fallback={<Loading />}>
             <div className="mb-3 px-2">
-              {organization.metadata.showDonationLinks && kofiGoalProgress !== null && (
+              {organization.metadata.showDonationLinks && kofiGoal && (
                 <>
-                  <DonationGoals kofiGoalProgress={kofiGoalProgress} compact />
+                  <DonationGoals kofiGoal={kofiGoal} kofiGoalProgress={kofiGoalProgress || "0"} compact />
                   <div className="my-3">
                     <DonateButton />
                   </div>

@@ -11,7 +11,10 @@ type Props = {
 async function DonateSection({ organization }: Props) {
   if (!organization.metadata.showDonationLinks) return;
 
-  const kofiGoalProgress = await getSettingFromDb({ key: "kofi-goal-progress", organizationId: null, optional: true });
+  const [kofiGoal, kofiGoalProgress] = await Promise.all([
+    getSettingFromDb({ key: "kofi-goal", organizationId: null, optional: true }),
+    getSettingFromDb({ key: "kofi-goal-progress", organizationId: null, optional: true }),
+  ]);
 
   return (
     <>
@@ -29,7 +32,7 @@ async function DonateSection({ organization }: Props) {
       </p>
       <DonateButton />
 
-      {kofiGoalProgress !== null && <DonationGoals kofiGoalProgress={kofiGoalProgress} />}
+      {kofiGoal && <DonationGoals kofiGoal={kofiGoal} kofiGoalProgress={kofiGoalProgress || "0"} />}
     </>
   );
 }

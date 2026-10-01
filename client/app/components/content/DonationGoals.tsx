@@ -1,22 +1,23 @@
 type Props = {
+  kofiGoal: string;
   kofiGoalProgress: string;
   compact?: boolean;
 };
 
-function DonationGoals({ kofiGoalProgress, compact }: Props) {
+function DonationGoals({ kofiGoal, kofiGoalProgress, compact }: Props) {
   const progressValue = parseInt(kofiGoalProgress, 10);
 
   return (
     <>
       {compact ? (
         <p className="mb-2">
-          Ko-fi goal progress: <strong>Personal Records</strong>
+          Ko-fi goal progress: <strong>{kofiGoal}</strong>
         </p>
       ) : (
         <>
           <h4 className="mt-4">Goals</h4>
           <p>
-            Prioritize RR feature: <strong>Personal Records</strong>
+            Prioritize RR feature: <strong>{kofiGoal}</strong>
           </p>
         </>
       )}
@@ -36,7 +37,7 @@ function DonationGoals({ kofiGoalProgress, compact }: Props) {
       {!compact && (
         <p className="mt-3">
           {progressValue < 100
-            ? "When this goal is reached, the Personal Records feature will be prioritized to be implemented into RecordRanks."
+            ? `When this goal is reached, the ${kofiGoal} feature will be prioritized to be implemented into RecordRanks.`
             : "The goal has been reached, so you can expect this feature to be implemented soon!"}
         </p>
       )}
