@@ -38,3 +38,16 @@ gpg --symmetric --cipher-algo AES256 -o "$HOME/backups/$backup_name.tar.gz.gpg" 
 rm -f $backup_name.tar.gz &&
 
 echo -e "\n${cyan}Done! Backup saved as $HOME/backups/$backup_name.tar.gz.gpg${nc}"
+
+# Offer to delete the oldest backup (saves disk; backups grow over time)
+oldest_backup=$(ls -1 "$HOME/backups"/backup_*.tar.gz.gpg 2>/dev/null | sort | head -n 1)
+if [[ -n "$oldest_backup" && "$oldest_backup" != "$HOME/backups/$backup_name.tar.gz.gpg" ]]; then
+  echo -e "\nOldest backup: ${cyan}$oldest_backup${nc}"
+  read -p "Delete the oldest backup to free up disk space? [y/N] " confirm
+  if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    rm -v "$oldest_backup"
+    echo -e "${cyan}Oldest backup deleted.${nc}"
+  else
+    echo "Keeping it."
+  fi
+fi
