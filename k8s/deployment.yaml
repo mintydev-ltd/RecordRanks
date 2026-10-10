@@ -22,6 +22,13 @@ spec:
           ports:
             - name: nextjs-port
               containerPort: 3000
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
           env:
             - name: POD_NAME
               valueFrom:
@@ -35,10 +42,14 @@ spec:
               path: /api/healthcheck
               port: nextjs-port
             initialDelaySeconds: 30
-            periodSeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /api/healthcheck/ready
               port: nextjs-port
             initialDelaySeconds: 10
-            periodSeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
