@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, isNotNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, or, sql } from "drizzle-orm";
 import type { RecordCategory } from "~/helpers/types.ts";
 import { db } from "~/server/db/provider.ts";
 import { type ContestResponse, contestsTable } from "~/server/db/schema/contests.ts";
@@ -7,6 +7,7 @@ import { eventCategoriesTable } from "~/server/db/schema/event-categories.ts";
 import { eventsTable } from "~/server/db/schema/events.ts";
 import { type PersonDetails, type PersonResponse, personsTable } from "~/server/db/schema/persons.ts";
 import { type Attempt, resultsTable } from "~/server/db/schema/results.ts";
+import { roundsTable } from "~/server/db/schema/rounds.ts";
 
 // This has to return a schema matching the PersonDetails type
 export const personsArrayJsonSql = sql`
@@ -161,3 +162,46 @@ export async function getPersonRecords({
 
   return records;
 }
+
+export type MedalCounts = {
+  gold: number;
+  silver: number;
+  bronze: number;
+};
+
+/**
+ * Counts how many gold, silver, and bronze medals a person has, based on their rankings in final
+ * rounds of non-meetup competitions (results with the "competitions" record category).
+ *
+ * @param organizationId - The organization ID.
+ * @param personId - The person ID.
+ */
+export async function getPersonMedalCounts({ organizationId, personId }: {
+  organizationId: string;
+  personId: number;
+}): Promise<MedalCounts> {
+  const [medalCounts] = await db
+    .select({
+      gold: sql<number>`COUNT(*) FILTER (WHERE ${resultsTable.ranking} = 1)`.mapWith(Number),
+      silver: sql<number>`COUNT(*) FILTER (WHERE ${resultsTable.ranking} = 2)`.mapWith(Number),
+      bronze: sql<number>`COUNT(*) FILTER (WHERE ${resultsTable.ranking} = 3)`.mapWith(Number),
+    })
+    .from(resultsTable)
+    .innerJoin(
+      roundsTable,
+      and(eq(resultsTable.organizationId, roundsTable.organizationId), eq(resultsTable.roundId, roundsTable.id)),
+    )
+    .where(
+      and(
+        eq(resultsTable.organizationId, organizationId),
+        eq(resultsTable.approved, true),
+        eq(resultsTable.recordCategory, "competitions"),
+        eq(roundsTable.roundTypeId, "f"),
+        inArray(resultsTable.ranking, [1, 2, 3]),
+        sql`${personId} = ANY(${resultsTable.personIds})`,
+      ),
+    );
+
+  return medalCounts ?? { gold: 0, silver: 0, bronze: 0 };
+}
+
