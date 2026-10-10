@@ -489,6 +489,8 @@ export const publishContestSF = actionClient
         logMessage("RR0023", `Approving participants from ${contest.name}`);
 
         if (contest.type === "wca-comp") {
+          const unmatchedPersonNames: string[] = [];
+
           for (const person of personsToBeApproved) {
             const updatePersonObject: Partial<SelectPerson> = { approved: true };
 
@@ -508,12 +510,16 @@ export const publishContestSF = actionClient
                 }
               }
 
-              if (!updatePersonObject.wcaId)
-                throw new RrActionError(`No matches found while assigning WCA ID for ${person.name}`);
+              if (!updatePersonObject.wcaId) unmatchedPersonNames.push(person.name);
             }
 
             await tx.update(personsTable).set(updatePersonObject).where(eq(personsTable.id, person.id));
           }
+
+          if (unmatchedPersonNames.length > 0)
+            throw new RrActionError(
+              `No matches found while assigning WCA ID for the following competitors: ${unmatchedPersonNames.join(", ")}. Resolve this manually and publish the contest again.`,
+            );
         } else {
           await approvePersons(tx, session.organization!.id, personsToBeApproved);
         }
