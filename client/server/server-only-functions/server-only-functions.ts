@@ -553,31 +553,24 @@ export async function approvePersons(
   organizationId: string,
   personsToBeApproved: Pick<SelectPerson, "id" | "name" | "localizedName" | "regionCode" | "wcaId">[],
 ) {
-  const matchedPersonWcaIds: { name: string; wcaId: string }[] = [];
-
   // Persons without a WCA ID need an exact-match lookup against the WCA API. Persons with the same name and
   // country share a single lookup, and lookups run in parallel batches to avoid sequential API call slowdowns.
-  const lookupKey = (p: Pick<SelectPerson, "name" | "localizedName" | "regionCode">) =>
-    JSON.stringify([p.name, p.localizedName ?? null, p.regionCode]);
   const personsToLookUp = personsToBeApproved.filter((p) => !p.wcaId);
-  const uniquePersons = new Map<string, (typeof personsToLookUp)[number]>();
-  for (const person of personsToLookUp) {
-    if (!uniquePersons.has(lookupKey(person))) uniquePersons.set(lookupKey(person), person);
-  }
-  const lookupResults = new Map<string, string | null>();
+  const uniquePersons = [
+    ...new Map(personsToLookUp.map((p) => [JSON.stringify([p.name, p.localizedName, p.regionCode]), p])).values(),
+  ];
 
-  const uniquePersonsArray = [...uniquePersons.values()];
-  for (let i = 0; i < uniquePersonsArray.length; i += WCA_LOOKUP_CONCURRENCY) {
-    const batch = uniquePersonsArray.slice(i, i + WCA_LOOKUP_CONCURRENCY);
+  const matchedPersonWcaIds: { name: string; wcaId: string }[] = [];
+  for (let i = 0; i < uniquePersons.length; i += WCA_LOOKUP_CONCURRENCY) {
     const batchResults = await Promise.all(
-      batch.map(async (person) => [lookupKey(person), await getPersonExactMatchWcaId(person)] as const),
+      uniquePersons.slice(i, i + WCA_LOOKUP_CONCURRENCY).map(async (person) => ({
+        person,
+        wcaId: await getPersonExactMatchWcaId(person),
+      })),
     );
-    for (const [key, wcaId] of batchResults) lookupResults.set(key, wcaId);
-  }
-
-  for (const person of personsToLookUp) {
-    const matchedPersonWcaId = lookupResults.get(lookupKey(person));
-    if (matchedPersonWcaId) matchedPersonWcaIds.push({ name: person.name, wcaId: matchedPersonWcaId });
+    for (const { person, wcaId } of batchResults) {
+      if (wcaId) matchedPersonWcaIds.push({ name: person.name, wcaId });
+    }
   }
 
   if (matchedPersonWcaIds.length > 0) {
