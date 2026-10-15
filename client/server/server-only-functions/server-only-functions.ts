@@ -539,6 +539,8 @@ export async function getRankings(
   return rankings!;
 }
 
+const WCA_LOOKUP_CONCURRENCY = 10;
+
 /**
  * Approves a list of persons, while checking for exact name and country matches with WCA competitors (if the person has a WCA ID).
  *
@@ -551,12 +553,23 @@ export async function approvePersons(
   organizationId: string,
   personsToBeApproved: Pick<SelectPerson, "id" | "name" | "localizedName" | "regionCode" | "wcaId">[],
 ) {
-  const matchedPersonWcaIds: { name: string; wcaId: string }[] = [];
+  // Persons without a WCA ID need an exact-match lookup against the WCA API. Persons with the same name and
+  // country share a single lookup, and lookups run in parallel batches to avoid sequential API call slowdowns.
+  const personsToLookUp = personsToBeApproved.filter((p) => !p.wcaId);
+  const uniquePersons = [
+    ...new Map(personsToLookUp.map((p) => [JSON.stringify([p.name, p.localizedName, p.regionCode]), p])).values(),
+  ];
 
-  for (const person of personsToBeApproved) {
-    if (!person.wcaId) {
-      const matchedPersonWcaId = await getPersonExactMatchWcaId(person);
-      if (matchedPersonWcaId) matchedPersonWcaIds.push({ name: person.name, wcaId: matchedPersonWcaId });
+  const matchedPersonWcaIds: { name: string; wcaId: string }[] = [];
+  for (let i = 0; i < uniquePersons.length; i += WCA_LOOKUP_CONCURRENCY) {
+    const batchResults = await Promise.all(
+      uniquePersons.slice(i, i + WCA_LOOKUP_CONCURRENCY).map(async (person) => ({
+        person,
+        wcaId: await getPersonExactMatchWcaId(person),
+      })),
+    );
+    for (const { person, wcaId } of batchResults) {
+      if (wcaId) matchedPersonWcaIds.push({ name: person.name, wcaId });
     }
   }
 
