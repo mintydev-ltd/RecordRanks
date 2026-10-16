@@ -611,7 +611,9 @@ export async function getPersonExactMatchWcaId(
 
     return null;
   } else {
-    throw new RrActionError("Error while fetching person matches from the WCA");
+    throw new RrActionError(
+      `Error while fetching WCA person matches for "${person.name}" (${person.regionCode}) — WCA API responded with ${res.status} ${res.statusText}`,
+    );
   }
 }
 
