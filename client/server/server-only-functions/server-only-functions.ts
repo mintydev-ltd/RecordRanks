@@ -591,7 +591,7 @@ export async function getPersonExactMatchWcaId(
   person: Pick<SelectPerson, "name" | "localizedName" | "regionCode">,
   ignoredWcaMatches: string[] = [],
 ): Promise<string | null> {
-  const res = await fetch(`${C.wcaV0ApiBaseUrl}/search/users?persons_table=true&q=${person.name}`);
+  const res = await fetch(`${C.wcaV0ApiBaseUrl}/search/users?persons_table=true&q=${encodeURIComponent(person.name)}`);
 
   if (res.ok) {
     const { result: wcaPersons } = await res.json();
