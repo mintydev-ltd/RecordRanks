@@ -634,12 +634,15 @@ export async function validateMaxMonthlyContests(organization: Pick<Organization
   }
 }
 
-export async function validateMaxTotalCompetitors(organization: Pick<OrganizationDetails, "id" | "subscription">) {
+export async function validateMaxTotalPersons(
+  organization: Pick<OrganizationDetails, "id" | "subscription">,
+  numberOfNewPersons = 1,
+) {
   const totalPersons = (
     await db.query.persons.findMany({ columns: { id: true }, where: { organizationId: organization.id } })
   ).length;
 
-  if (organization.subscription && totalPersons >= organization.subscription.limits.competitors) {
+  if (organization.subscription && totalPersons + numberOfNewPersons > organization.subscription.limits.competitors) {
     throw new RrActionError(
       C.message.maxCompetitorsReached + (IS_RR_INSTANCE ? ". Consider upgrading to a higher plan." : ""),
     );
@@ -674,7 +677,7 @@ export async function getOrCreatePersonByWcaId(
 
   logMessage("RR0019", `Creating person with name ${wcaPerson.name} and WCA ID ${wcaId} (directly via WCA ID)`);
 
-  await validateMaxTotalCompetitors(organization);
+  await validateMaxTotalPersons(organization);
 
   const [createdPerson] = await db
     .insert(personsTable)

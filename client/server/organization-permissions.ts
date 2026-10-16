@@ -9,7 +9,7 @@ const statement = {
   competitions: ["create", "update", "approve", "publish", "delete"],
   meetups: ["create", "update", "approve", "publish", "delete"],
   onlineComps: ["submit-own-result"],
-  persons: ["create", "update", "approve", "delete"],
+  persons: ["create", "bulk-create", "update", "approve", "delete"],
   events: ["create", "update", "delete"],
   videoBasedResults: ["create", "update", "approve", "delete"],
 } as const;
