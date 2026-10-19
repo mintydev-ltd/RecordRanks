@@ -539,7 +539,7 @@ export async function getRankings(
   return rankings!;
 }
 
-const WCA_LOOKUP_CONCURRENCY = 10;
+const WCA_LOOKUP_CONCURRENCY = 5;
 
 /**
  * Approves a list of persons, while checking for exact name and country matches with WCA competitors (if the person has a WCA ID).
