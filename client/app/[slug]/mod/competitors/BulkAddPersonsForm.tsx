@@ -1,6 +1,6 @@
 "use client";
 
-import { parse } from "csv-parse/sync";
+import { parse } from "csv-parse/browser/esm/sync";
 import { useAction } from "next-safe-action/hooks";
 import { useContext, useState } from "react";
 import useSWR from "swr";
