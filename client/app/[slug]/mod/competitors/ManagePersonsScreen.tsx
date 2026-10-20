@@ -229,7 +229,13 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
           </Button>
         </div>
       ) : mode === "bulk-add" ? (
-        <BulkAddPersonsForm onCancel={cancel} />
+        <BulkAddPersonsForm
+          onCancel={cancel}
+          onSubmit={() => {
+            cancel();
+            mutate();
+          }}
+        />
       ) : (
         <PersonForm
           personUnderEdit={personUnderEdit}
