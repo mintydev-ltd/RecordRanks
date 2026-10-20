@@ -542,7 +542,7 @@ export async function getRankings(
 const WCA_LOOKUP_CONCURRENCY = 5;
 // The WCA API rate-limits bursts (429s observed above ~10 simultaneous requests, with connection-level
 // failures beyond that). Spacing lookups keeps us well under the limit.
-const WCA_LOOKUP_INTERVAL_MS = 200;
+const WCA_LOOKUP_INTERVAL_MS = 500;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -576,7 +576,7 @@ export async function approvePersons(
     for (const { person, wcaId } of batchResults) {
       if (wcaId) matchedPersonWcaIds.push({ name: person.name, wcaId });
     }
-    // Pace batches so we stay under the WCA API rate limit (5 requests per 200ms ≈ 10 req/s sustained).
+    // Pace batches so we stay under the WCA API rate limit (5 requests per 500ms ≈ 10 req/s sustained).
     if (i + WCA_LOOKUP_CONCURRENCY < uniquePersons.length) {
       await sleep(WCA_LOOKUP_INTERVAL_MS);
     }
