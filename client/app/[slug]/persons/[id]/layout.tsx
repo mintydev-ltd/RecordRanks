@@ -4,6 +4,7 @@ import Region from "~/app/components/Region.tsx";
 import LoadingError from "~/app/components/UI/LoadingError.tsx";
 import { SwrKey } from "~/helpers/swr-keys.ts";
 import { db } from "~/server/db/provider.ts";
+import { getPersonMedalCounts } from "~/server/server-only-functions/persons-functions.ts";
 import { getOrgDetails, getRegions } from "~/server/server-only-functions/server-only-functions.ts";
 
 const ParamsValidator = z.strictObject({
@@ -21,9 +22,10 @@ async function PersonLayout({ children, params }: Props) {
   const organization = await getOrgDetails({ slug });
   const personId = parseInt(id, 10);
 
-  const [person, regions] = await Promise.all([
+  const [person, regions, medalCounts] = await Promise.all([
     db.query.persons.findFirst({ where: { organizationId: organization.id, id: personId } }),
     getRegions(organization.id),
+    getPersonMedalCounts({ organizationId: organization.id, personId }),
   ]);
 
   if (!person) return <LoadingError loadingEntity="person" />;
@@ -59,6 +61,23 @@ async function PersonLayout({ children, params }: Props) {
                     >
                       {person.wcaId}
                     </a>
+                  </div>
+                )}
+
+                {(medalCounts.gold > 0 || medalCounts.silver > 0 || medalCounts.bronze > 0) && (
+                  <div
+                    className="tw:flex tw:items-center tw:gap-3"
+                    title="Podium finishes in final rounds of competitions"
+                  >
+                    <span className="tw:flex tw:items-center tw:gap-1" title="First places">
+                      🥇 <strong>{medalCounts.gold}</strong>
+                    </span>
+                    <span className="tw:flex tw:items-center tw:gap-1" title="Second places">
+                      🥈 <strong>{medalCounts.silver}</strong>
+                    </span>
+                    <span className="tw:flex tw:items-center tw:gap-1" title="Third places">
+                      🥉 <strong>{medalCounts.bronze}</strong>
+                    </span>
                   </div>
                 )}
               </div>
