@@ -59,7 +59,7 @@ function Person({
           rel="noopener"
           className="rr-button"
         >
-          <Image src="/wca_logo.svg" height={19} width={19} alt="WCA Profile" />
+          <Image src="/wca_logo.svg" height={19} width={19} alt="WCA Profile" className="tw:min-h-4.75 tw:min-w-4.75" />
         </a>
       )}
     </span>
