@@ -321,11 +321,13 @@ export const bulkCreatePersonsSF = actionClient
 
     await validateMaxTotalPersons(session.organization!, newPersons.length);
 
-    await db.transaction(async (tx) => {
-      for (const person of newPersons) {
-        await validatePerson(session.organization!.id, person, { tx });
-        await createPersonSF({ newPersonDto: person });
-      }
+    return await db.transaction(async (tx) => {
+      for (const person of newPersons) await validatePerson(session.organization!.id, person, { tx });
+
+      return await tx
+        .insert(table)
+        .values(newPersons.map((p) => ({ ...p, organizationId: session.organization!.id, createdBy: session.user.id })))
+        .returning();
     });
   });
 
