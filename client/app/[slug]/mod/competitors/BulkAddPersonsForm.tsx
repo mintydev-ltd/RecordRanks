@@ -9,17 +9,19 @@ import FormTextArea from "~/app/components/form/FormTextArea.tsx";
 import { MainContext } from "~/helpers/contexts.ts";
 import { useSession } from "~/helpers/hooks.ts";
 import { SwrKey } from "~/helpers/swr-keys.ts";
+import type { SpaceType } from "~/helpers/types.ts";
 import { clientGetHasPermission, getActionError } from "~/helpers/utility-functions.ts";
 import type { PersonDto } from "~/helpers/validators/Person.ts";
 import { bulkCreatePersonsSF } from "~/server/server-functions/person-server-functions.ts";
 
-const expectedCsvColumns = ["name", "localized_name", "region_code", "wca_id"];
+const baseCsvColumns = ["name", "localized_name", "region_code"];
+const speedcubingCsvColumns = [...baseCsvColumns, "wca_id"];
 
-function parsePersonRow(row: Record<string, string>): PersonDto | null {
+function parsePersonRow(row: Record<string, string>, isSpeedcubing: boolean): PersonDto | null {
   const name = row.name?.trim();
   const localizedName = row.localized_name?.trim() || null;
   const regionCode = row.region_code?.trim().toUpperCase();
-  const wcaId = row.wca_id?.trim().toUpperCase() || null;
+  const wcaId = isSpeedcubing ? row.wca_id?.trim().toUpperCase() || null : null;
 
   // These two fields are required
   if (!name || !regionCode) return null;
@@ -35,6 +37,8 @@ type Props = {
 function BulkAddPersonsForm({ onSubmit, onCancel }: Props) {
   const { session } = useSession();
   const { changeErrorMessages, changeSuccessMessage, resetMessages } = useContext(MainContext);
+  const { data: spaceType }: { data: SpaceType } = useSWR(SwrKey.SpaceType, { suspense: true });
+  const isSpeedcubing = spaceType === "speedcubing";
 
   const { executeAsync: bulkCreatePersons, isPending } = useAction(bulkCreatePersonsSF);
   const { data: canBulkCreatePersons } = useSWR(
@@ -61,10 +65,13 @@ function BulkAddPersonsForm({ onSubmit, onCancel }: Props) {
 
         if (parsed.length > 0) {
           const header = Object.keys(parsed[0]);
-          const hasAnyExpectedColumn = expectedCsvColumns.some((col) => header.includes(col));
+          const expectedColumns = isSpeedcubing ? speedcubingCsvColumns : baseCsvColumns;
+          const hasAnyExpectedColumn = expectedColumns.some((col) => header.includes(col));
           if (!hasAnyExpectedColumn) continue; // wrong delimiter, try the next one
 
-          const persons = parsed.map(parsePersonRow).filter((p): p is PersonDto => p !== null);
+          const persons = parsed
+            .map((row) => parsePersonRow(row, isSpeedcubing))
+            .filter((p): p is PersonDto => p !== null);
           if (persons.length > 0) return persons;
         }
       } catch (err: any) {
@@ -74,7 +81,7 @@ function BulkAddPersonsForm({ onSubmit, onCancel }: Props) {
 
     changeErrorMessages([
       `Could not parse CSV (${lastError?.message ?? "no valid rows"}). ` +
-        "Please ensure the first row is a header with the columns: name, localized_name, region_code, wca_id, " +
+        `Please ensure the first row is a header with the columns: ${(isSpeedcubing ? speedcubingCsvColumns : baseCsvColumns).join(", ")}, ` +
         "and that the delimiter is a comma (,), semicolon (;) or tab.",
     ]);
     return [];
@@ -100,16 +107,27 @@ function BulkAddPersonsForm({ onSubmit, onCancel }: Props) {
   return (
     <Form onSubmit={handleSubmit} onCancel={onCancel} disableControls={disabled} isLoading={isPending}>
       <p className="text-gray-500 text-sm">
-        Enter CSV data below. Supported columns (in any order): name, localized_name, region_code, wca_id. The first row
-        must be a header with those exact column names.
+        Enter CSV data below. Supported columns (in any order):{" "}
+        {isSpeedcubing ? speedcubingCsvColumns.join(", ") : baseCsvColumns.join(", ")}. The first row must be a header
+        with those exact column names.
         <strong> Supported delimiters: comma (,), semicolon (;), or tab.</strong> Example:
       </p>
       <code>
-        name,localized_name,region_code,wca_id
+        {isSpeedcubing ? speedcubingCsvColumns.join(",") : baseCsvColumns.join(",")}
         <br />
-        John Doe,,US,2010DOEJ01
-        <br />
-        Jane Doe,,CA,2011DOEJ02
+        {isSpeedcubing ? (
+          <>
+            John Doe,,US,2010DOEJ01
+            <br />
+            Jane Doe,,CA,2011DOEJ02
+          </>
+        ) : (
+          <>
+            John Doe,,US
+            <br />
+            Jane Doe,,CA
+          </>
+        )}
       </code>
       <FormTextArea
         title="CSV data"
