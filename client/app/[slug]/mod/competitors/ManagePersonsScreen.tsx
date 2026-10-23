@@ -7,6 +7,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
+import BulkAddPersonsForm from "~/app/[slug]/mod/competitors/BulkAddPersonsForm.tsx";
 import CreatorDetails from "~/app/components/CreatorDetails.tsx";
 import FiltersContainer from "~/app/components/FiltersContainer.tsx";
 import ContestSelect from "~/app/components/form/ContestSelect.tsx";
@@ -61,7 +62,9 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
     session?.activeOrganizationId ? [SwrKey.CanApprovePersons, session] : null,
     () => clientGetHasPermission({ persons: ["approve"] }),
   );
-  const [mode, setMode] = useState<ListPageMode | "add-once">(searchParams.get("redirect") ? "add-once" : "view");
+  const [mode, setMode] = useState<ListPageMode | "add-once" | "bulk-add">(
+    searchParams.get("redirect") ? "add-once" : "view",
+  );
   const [personUnderEdit, setPersonUnderEdit] = useState<SelectPerson>();
   const [approvedFilter, setApprovedFilter] = useState<"approved" | "unapproved" | "">("");
   const [region, setRegion] = useState<string>(C.notSelectedOption);
@@ -106,6 +109,8 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
 
   const setSearchDebounced = useCallback(debounce(setSearch, C.fetchDebounceTimeout), []);
 
+  const buttonsDisabled = mode !== "view" || isDeleting || isApproving || isValidating;
+
   const onSearchChange = (value: string) => {
     setSearchInput(value);
     setPage(1);
@@ -124,21 +129,24 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
     resetMessages();
   };
 
-  const buttonsDisabled = mode !== "view" || isDeleting || isApproving || isValidating;
-
   const cancel = () => {
     setMode("view");
     resetMessages();
   };
 
-  const onAddCompetitor = () => {
+  const onAddPerson = () => {
     ignoredWcaMatches.current = undefined;
     setMode("add");
     setPersonUnderEdit(undefined);
     resetMessages();
   };
 
-  const onEditCompetitor = (person: SelectPerson) => {
+  const onBulkAddPersons = () => {
+    setMode("bulk-add");
+    resetMessages();
+  };
+
+  const onEditPerson = (person: SelectPerson) => {
     ignoredWcaMatches.current = undefined;
     resetMessages();
     setMode("edit");
@@ -146,7 +154,7 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
     window.scrollTo(0, 0);
   };
 
-  const deleteCompetitor = async (person: SelectPerson) => {
+  const onDeletePerson = async (person: SelectPerson) => {
     ignoredWcaMatches.current = undefined;
     setLoadingId(`delete_person_${person.id}_button`);
     const res = await deletePerson({ id: person.id });
@@ -163,7 +171,7 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
     }
   };
 
-  const approveCompetitor = async (person: SelectPerson) => {
+  const onApprovePerson = async (person: SelectPerson) => {
     if (ignoredWcaMatches.current && person.id !== ignoredWcaMatches.current.personId) {
       ignoredWcaMatches.current = undefined;
     }
@@ -187,7 +195,7 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
     }
   };
 
-  const updateCompetitors = (person: SelectPerson, { isNew }: { isNew: boolean }) => {
+  const updatePersons = (person: SelectPerson, { isNew }: { isNew: boolean }) => {
     if (isNew) {
       mutate();
     } else {
@@ -212,19 +220,27 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
       <ToastMessages className="mx-2" />
 
       {mode === "view" ? (
-        <Button
-          onClick={onAddCompetitor}
-          disabled={isDeleting || isApproving}
-          className="btn-success btn-sm mx-2"
-          style={{ width: "fit-content" }}
-        >
-          Create person profile
-        </Button>
+        <div className="tw:flex tw:flex-wrap tw:gap-3 p-2">
+          <Button onClick={onAddPerson} disabled={buttonsDisabled} className="btn-success btn-sm">
+            Create person profile
+          </Button>
+          <Button onClick={onBulkAddPersons} disabled={buttonsDisabled} className="btn-secondary btn-sm">
+            Bulk add persons
+          </Button>
+        </div>
+      ) : mode === "bulk-add" ? (
+        <BulkAddPersonsForm
+          onCancel={cancel}
+          onSubmit={() => {
+            cancel();
+            mutate();
+          }}
+        />
       ) : (
         <PersonForm
           personUnderEdit={personUnderEdit}
           creator={creator}
-          onSubmit={updateCompetitors}
+          onSubmit={updatePersons}
           onCancel={mode !== "add-once" ? cancel : undefined}
           wcaIdInputHidden={spaceType !== "speedcubing"}
           onMerged={onMerged}
@@ -330,7 +346,7 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
                               {canApprovePersons && !person.approved && (
                                 <Button
                                   id={`approve_person_${person.id}_button`}
-                                  onClick={() => approveCompetitor(person)}
+                                  onClick={() => onApprovePerson(person)}
                                   disabled={buttonsDisabled}
                                   loadingId={loadingId}
                                   className="btn-xs btn-success"
@@ -342,7 +358,7 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
                               )}
                               {(canApprovePersons || (person.createdBy === user?.id && !person.approved)) && (
                                 <Button
-                                  onClick={() => onEditCompetitor(person)}
+                                  onClick={() => onEditPerson(person)}
                                   disabled={buttonsDisabled}
                                   className="btn-xs"
                                   title="Edit"
@@ -354,7 +370,7 @@ function ManagePersonsScreen({ personsData: initPersonsData, creators }: Props) 
                               {(canApprovePersons || (person.createdBy === user?.id && !person.approved)) && (
                                 <Button
                                   id={`delete_person_${person.id}_button`}
-                                  onClick={() => deleteCompetitor(person)}
+                                  onClick={() => onDeletePerson(person)}
                                   disabled={buttonsDisabled}
                                   loadingId={loadingId}
                                   className="btn-xs btn-danger"

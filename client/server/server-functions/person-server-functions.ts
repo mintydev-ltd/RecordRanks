@@ -8,7 +8,7 @@ import { fetchWcaPerson, getNameAndLocalizedName, getSimplifiedString } from "~/
 import { type PersonDto, PersonValidator } from "~/helpers/validators/Person.ts";
 import { RegionCodeValidator, WcaIdValidator } from "~/helpers/validators/Validators.ts";
 import { auth } from "~/server/auth.ts";
-import { db } from "~/server/db/provider.ts";
+import { type DbTransactionType, db } from "~/server/db/provider.ts";
 import { usersTable } from "~/server/db/schema/auth-schema.ts";
 import { contestsTable } from "~/server/db/schema/contests.ts";
 import {
@@ -24,7 +24,7 @@ import {
   getOrgDetails,
   getPersonExactMatchWcaId,
   logMessage,
-  validateMaxTotalCompetitors,
+  validateMaxTotalPersons,
 } from "~/server/server-only-functions/server-only-functions.ts";
 
 export const getPersonByIdSF = actionClient
@@ -276,7 +276,7 @@ export const createPersonSF = actionClient
     const { name, wcaId } = newPersonDto;
     logMessage("RR0019", `Creating person with name ${name} and ${wcaId ? `WCA ID ${wcaId}` : "no WCA ID"}`);
 
-    await validateMaxTotalCompetitors(session.organization!);
+    await validateMaxTotalPersons(session.organization!);
 
     const [{ success: canCreate }, { success: canApprove }] = await Promise.all([
       auth.api.hasPermission({ headers: httpHeaders, body: { permissions: { persons: ["create"] } } }),
@@ -307,6 +307,28 @@ export const createPersonSF = actionClient
       .values({ ...newPersonDto, organizationId: session.organization!.id, createdBy: session.user.id })
       .returning();
     return createdPerson;
+  });
+
+export const bulkCreatePersonsSF = actionClient
+  .metadata({ auth: { useOrganization: true, orgPermissions: { persons: ["bulk-create"] } } })
+  .inputSchema(
+    z.strictObject({
+      newPersons: z.array(PersonValidator),
+    }),
+  )
+  .action(async ({ parsedInput: { newPersons }, ctx: { session } }) => {
+    logMessage("RR0061", "Bulk adding persons with IDs");
+
+    await validateMaxTotalPersons(session.organization!, newPersons.length);
+
+    return await db.transaction(async (tx) => {
+      for (const person of newPersons) await validatePerson(session.organization!.id, person, { tx });
+
+      return await tx
+        .insert(table)
+        .values(newPersons.map((p) => ({ ...p, organizationId: session.organization!.id, createdBy: session.user.id })))
+        .returning();
+    });
   });
 
 export const updatePersonSF = actionClient
@@ -534,19 +556,21 @@ async function validatePerson(
   organizationId: string,
   newPersonDto: PersonDto,
   {
+    tx,
     ignoreDuplicate,
     excludeId,
     canApprove,
   }: {
+    tx?: DbTransactionType;
     ignoreDuplicate?: boolean;
     excludeId?: number;
     canApprove?: boolean;
-  } = {},
+  },
 ) {
   const excludeCondition = excludeId ? ne(table.id, excludeId) : undefined;
 
   if (newPersonDto.wcaId) {
-    const [sameWcaIdPerson] = await db
+    const [sameWcaIdPerson] = await (tx ?? db)
       .select()
       .from(table)
       .where(and(eq(table.organizationId, organizationId), eq(table.wcaId, newPersonDto.wcaId), excludeCondition))
@@ -554,7 +578,7 @@ async function validatePerson(
 
     if (sameWcaIdPerson) throw new RrActionError("A person with the same WCA ID already exists in the CC database");
   } else if (!canApprove || !ignoreDuplicate) {
-    const [duplicatePerson] = await db
+    const [duplicatePerson] = await (tx ?? db)
       .select()
       .from(table)
       .where(
